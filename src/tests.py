@@ -519,5 +519,56 @@ def test_driver_on(ser, driver_type):
 
     jig_read_test(ser, Value.LOW, "Driver " + driver_type_string + " : Read Iprop Low", "iprop", Pin.IPROP, True)
 
+"""
+Function to test that the driver does not run when disable is high or sleep is low.
+
+Parameters:
+- ser: Serial object for communication.
+- driver_type: String, either "dis" for disable high or "sleep" for sleep low.
+
+The function sets the appropriate pins to the specified states and verifies that the driver does not run by reading the expected low values from the relevant pins.
+"""
 def test_driver_off(ser, driver_type):
+    sleep_value = Value.NO_VALUE
+    disable_value = Value.NO_VALUE
+    sleep_value_string = ""
+    disable_value_string = ""
+    test_name = ""
+
+    if driver_type == "dis":
+        sleep_value = Value.HIGH
+        disable_value = Value.HIGH
+        sleep_value_string = "High"
+        disable_value_string = "High"
+        test_name = "Driver Off with Disable High"
+
+    elif driver_type == "sleep":
+        sleep_value = Value.LOW
+        disable_value = Value.LOW
+        sleep_value_string = "Low"
+        disable_value_string = "Low"
+        test_name = "Driver Off with Sleep Low"
     
+    hub_set_jig_read(ser, Value.HIGH, test_name + " : Set In 1 High", "in 1", Pin.IN1, True)
+
+    hub_set_jig_read(ser, sleep_value, test_name + " : Set Sleep " + sleep_value_string, "sleep", Pin.SLEEP, True)
+
+    hub_set_jig_read(ser, disable_value, test_name + " : Set Disable " + disable_value_string, "disable", Pin.DIS, True)
+
+    print("Waiting 20 seconds for driver to turn off")
+
+    time.sleep(20)
+
+    jig_read_test(ser, Value.LOW, test_name + " : Read In 2 Low", "in 2", Pin.IN2, True)
+
+    jig_read_test(ser, Value.LOW, test_name + " : Read Peltier 1 Low", "peltier 1", Pin.PELTIER1, True)
+
+    jig_read_test(ser, Value.LOW, test_name + " : Read Peltier 2 Low", "peltier 2", Pin.PELTIER2, True)
+
+    jig_read_test(ser, Value.LOW, test_name + " : Read Out 1 Low", "out 1", Pin.OUT1, True)
+
+    jig_read_test(ser, Value.LOW, test_name + " : Read Out 2 Low", "out 2", Pin.OUT2, True)
+
+    jig_read_test(ser, Value.HIGH, test_name + " : Read Fault High", "fault", Pin.FAULT, True)
+
+    jig_read_test(ser, Value.LOW, test_name + " : Read Iprop Low", "iprop", Pin.IPROP, True)
