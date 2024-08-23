@@ -33,8 +33,8 @@ def read_from_serial(ser, size, add_receive_protocols):      #constantly checks 
     start_time = time.time()  # Record the start time
     
     while True: 
-        if time.time() - start_time > 10:  # Check if 1 second has passed
-            print("Timeout: Did not receive any code within 4 seconds.")
+        if time.time() - start_time > 20:  # Check if 1 second has passed
+            print("Timeout: Did not receive any code within 10 seconds.")
             return -1
 
         received_msg_size = 10;  

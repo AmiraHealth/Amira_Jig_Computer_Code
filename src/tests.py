@@ -176,7 +176,7 @@ def hub_set_jig_read(ser, state, test_name, pin_name, this_pin, print_success):
         add_test_result(test_name, "FAILURE", "Unknown action received from jig when setting hub " + pin_name + " pin to " + state_string)
         return -1
     
-    this_code = create_code(id = Id.COMPUTER_REQUEST, mode = Mode.JIG_READ, pin = Pin.LED3, value = Value.NO_VALUE) #TEMPORARY FOR OLD JIG 
+    this_code = create_code(id = Id.COMPUTER_REQUEST, mode = Mode.JIG_READ, pin = this_pin, value = Value.NO_VALUE) #TEMPORARY FOR OLD JIG 
 
     if(this_code == 0):
         print("Computer failed to create jig read request code")
@@ -259,6 +259,7 @@ def jig_read_test(ser, state, test_name, pin_name, this_pin, print_success):
     if(this_code == 0):
         print("Computer failed to create jig read request code")
         add_test_result(test_name, "FAILURE", "Computer failed to create jig read request code")
+        time.sleep(2)
         return -1
     
     code_details_string = "Read jig " + pin_name + " pin"
@@ -267,44 +268,55 @@ def jig_read_test(ser, state, test_name, pin_name, this_pin, print_success):
 
     if(ret == -1):
         add_test_result(test_name, "FAILURE", "Computer error when reading from serial")
+        time.sleep(2)
         return -1
     
     elif(ret == -2):
         add_test_result(test_name, "FAILURE", "Computer did not receive expected receive code from jig")
+        time.sleep(2)
         return -1
     
     this_code = read_from_serial(ser, RESPONSE_SIZE, True)
 
     if this_code == -1:
         add_test_result(test_name, "FAILURE", "Computer did not receive a code from jig within 2 seconds")
+        time.sleep(2)
         return -1
     
     if this_code == -2:
         add_test_result(test_name, "FAILURE", "Computer did not receive expected code size from jig")
+        time.sleep(2)
         return -1
     
     if this_code['action'] == Action.JIG_FAILURE:
         add_test_result(test_name, "FAILURE", "Jig failure when reading jig " + pin_name + " pin")
+        time.sleep(2)
         return -1
     elif this_code['action'] == Action.CJ_COMM_FAILURE:
         add_test_result(test_name, "FAILURE", "Communication failure between computer and jig when reading jig " + pin_name + " pin")
+        time.sleep(2)
         return -1
     elif this_code['action'] == Action.FAILURE:
         add_test_result(test_name, "FAILURE", "Computer failure when reading jig " + pin_name + " pin")
+        time.sleep(2)
         return -1
     elif this_code['action'] == Action.SUCCESS:
         if this_code['value'] == state:
             if print_success:
                 add_test_result(test_name, "SUCCESS", "")
+            time.sleep(2)
             return 1
         else:
             add_test_result(test_name, "FAILURE", "Jig read " + wrong_state_string + " on hub " + pin_name + " pin when " + state_string + " was expected")
+            time.sleep(2)
             return -1
     else:
         print("Unexpected action received from jig")
         add_test_result(test_name, "FAILURE", "Unexpected action received from jig when reading jig " + pin_name + " pin")
+        time.sleep(2)
         return -1
     
+    time.sleep(2)
     return -1
 
 def jig_set_hub_read(ser, state, test_name, pin_name, this_pin, print_success):
@@ -424,12 +436,88 @@ def jig_set_hub_read(ser, state, test_name, pin_name, this_pin, print_success):
 def test_pump(ser):
     hub_set_jig_read(ser, Value.HIGH, "Set Pump High", "pump", Pin.PUMP, True)
 
-    jig_read_test(ser, Value.HIGH, "Read Pump Current", "pump current", Pin.PC, True)
+    jig_read_test(ser, Value.HIGH, "Read Pump Current High", "pump current", Pin.PC, True)
 
     hub_set_jig_read(ser, Value.LOW, "Set Pump Low", "pump", Pin.PUMP, True)
 
-    jig_read_test(ser, Value.LOW, "Read Pump Current", "pump current", Pin.PC, True)
+    jig_read_test(ser, Value.LOW, "Read Pump Current Low", "pump current", Pin.PC, True)
 
+#driver_type is 1 for cooling, in1 high, and 2 for heating, in2 high
+def test_driver_on(ser, driver_type):
+    """
+    Test the functionality of the driver by setting the appropriate input pin high and verifying the output, peltier, input, disable, sleep, and fault pins on the jig.
 
+    Parameters:
+    ser (serial.Serial): The serial port to use for communication.
+    driver_type (int): An integer that is either 1 for cooling or 2 for heating.
 
+    Returns:
+    None
+    """
+    high_out = Pin.NO_PIN
+    low_out = Pin.NO_PIN
+    high_peltier = Pin.NO_PIN
+    low_peltier = Pin.NO_PIN
+    high_in = Pin.NO_PIN
+    low_in = Pin.NO_PIN
+    high_out_string = ""
+    low_out_string = ""
+    high_peltier_string = ""
+    low_peltier_string = ""
+    high_in_string = ""
+    low_in_string = ""
+    driver_type_string = ""
 
+    if driver_type == 1:
+        high_out = Pin.OUT1
+        low_out = Pin.OUT2
+        high_peltier = Pin.PELTIER1
+        low_peltier = Pin.PELTIER2
+        high_in = Pin.IN1
+        low_in = Pin.IN2
+        high_out_string = "Out 1"
+        low_out_string = "Out 2"
+        high_peltier_string = "Peltier 1"
+        low_peltier_string = "Peltier 2"
+        high_in_string = "In 1"
+        low_in_string = "In 2"
+        driver_type_string = "Cooling"
+
+    elif driver_type == 2:
+        high_out = Pin.OUT2
+        low_out = Pin.OUT1
+        high_peltier = Pin.PELTIER2
+        low_peltier = Pin.PELTIER1
+        high_in = Pin.IN2
+        low_in = Pin.IN1
+        high_out_string = "Out 2"
+        low_out_string = "Out 1"
+        high_peltier_string = "Peltier 2"
+        low_peltier_string = "Peltier 1"
+        high_in_string = "In 2"
+        low_in_string = "In 1"
+        driver_type_string = "Heating"
+
+    #sets the wanted driver input high and reads from jig
+    hub_set_jig_read(ser, Value.HIGH, "Driver " + driver_type_string + " : Set " + high_in_string + " High", high_in_string, high_in, True)     
+
+    jig_read_test(ser, Value.HIGH, "Driver " + driver_type_string + " : Read " + high_out_string + " High", high_out_string, high_out, True)
+
+    jig_read_test(ser, Value.HIGH, "Driver " + driver_type_string + " : Read " + high_peltier_string + " High", high_peltier_string, high_peltier, True)
+
+    jig_read_test(ser, Value.LOW, "Driver " + driver_type_string + " : Read " + low_in_string + " Low", low_in_string, low_in, True)
+
+    jig_read_test(ser, Value.LOW, "Driver " + driver_type_string + " : Read " + low_out_string + " Low", low_out_string, low_out, True)
+
+    jig_read_test(ser, Value.LOW, "Driver " + driver_type_string + " : Read " + low_peltier_string + " Low", low_peltier_string, low_peltier, True)
+
+    jig_read_test(ser, Value.HIGH, "Driver " + driver_type_string + " : Read Fault High", "fault", Pin.FAULT, True)
+
+    jig_read_test(ser, Value.LOW, "Driver " + driver_type_string + " : Read Disable Low", "disable", Pin.DIS, True)
+
+    jig_read_test(ser, Value.HIGH, "Driver " + driver_type_string + " : Read Sleep High", "sleep", Pin.SLEEP, True)
+
+    jig_read_test(ser, Value.LOW, "Driver " + driver_type_string + " : Read Iprop Low", "iprop", Pin.IPROP, True)
+
+def test_driver_off(ser, driver_type):
+    

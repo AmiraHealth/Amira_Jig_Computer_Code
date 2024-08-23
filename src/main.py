@@ -49,7 +49,7 @@ print("")
 
 control_tests(ser1, "start")
 
-time.sleep(5)
+time.sleep(3)
 
 # hub_set_jig_read(ser1, Value.HIGH, "Set LED 3 High", "led 3", Pin.LED3, True)
 
@@ -65,19 +65,19 @@ time.sleep(5)
 
 # hub_set_jig_read(ser1, Value.LOW, "Set Pump Low", "pump", Pin.PUMP, True)
 
-# jig_set_hub_read(ser1, Value.HIGH, "Set Float1 High", "float1", Pin.FLOAT1, True)
+# jig_set_hub_read(ser1, Value.HIGH, "Set Float1 High", "float 1", Pin.FLOAT1, True)
 
-# jig_set_hub_read(ser1, Value.LOW, "Set Float1 Low", "float1", Pin.FLOAT1, True)
+# jig_set_hub_read(ser1, Value.LOW, "Set Float1 Low", "float 1", Pin.FLOAT1, True)
 
-# this_code = create_code(id = Id.COMPUTER_REQUEST, mode = Mode.JIG_SET, pin = Pin.FLOAT1, value = Value.HIGH)
-# send_code(this_code, ser1, True, "Set Float1 High")
-# this_code = read_from_serial(ser1, RESPONSE_SIZE, True)
+# hub_set_jig_read(ser1, Value.HIGH, "Driver Cooling : Set In1 High", "in 1", Pin.IN1, True)
 
-# time.sleep(10)
+# hub_set_jig_read(ser1, Value.HIGH, "Driver Heating : Set In2 High", "in 1", Pin.IN2, True)
 
-# this_code = create_code(id = Id.COMPUTER_REQUEST, mode = Mode.JIG_SET, pin = Pin.FLOAT1, value = Value.LOW)
-# send_code(this_code, ser1, True, "Set Float1 Low")
-# this_code = read_from_serial(ser1, RESPONSE_SIZE, True)
+# test_driver_on(ser1, 1) #test cooling driver
+
+# test_driver_on(ser1, 2) #test heating driver
+
+
 
 control_tests(ser1, "end")
 
