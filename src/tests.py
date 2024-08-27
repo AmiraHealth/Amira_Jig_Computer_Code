@@ -423,6 +423,9 @@ def jig_set_hub_read(ser, state, test_name, pin_name, this_pin, print_success):
             if print_success:
                 add_test_result(test_name, "SUCCESS", "")
             return 1
+        elif (this_pin == Pin.TEMP_1 or this_pin == Pin.TEMP_2 or this_pin == Pin.TEMP_3 or this_pin == Pin.TEMP_4) and this_code['value'] == Value.UNKNOWN_TEMP:
+            add_test_result(test_name, "FAILURE", "Hub read unknown, incorrect temperature on " + pin_name + " pin")
+            return -1
         else:
             add_test_result(test_name, "FAILURE", "Hub read " + wrong_state_string + " on " + pin_name + " pin when " + state_string + " was expected")
             return -1
@@ -572,3 +575,22 @@ def test_driver_off(ser, driver_type):
     jig_read_test(ser, Value.HIGH, test_name + " : Read Fault High", "fault", Pin.FAULT, True)
 
     jig_read_test(ser, Value.LOW, test_name + " : Read Iprop Low", "iprop", Pin.IPROP, True)
+
+def test_temp(ser, temp_number):
+    pin = Pin.NO_PIN
+
+    if temp_number == 1:
+        pin = Pin.TEMP_1
+    elif temp_number == 2:
+        pin = Pin.TEMP_2
+    elif temp_number == 3:
+        pin = Pin.TEMP_3
+    elif temp_number == 4:
+        pin = Pin.TEMP_4
+    else:
+        print("Invalid temperature number")
+        return -1
+    
+    jig_set_hub_read(ser, Value.HIGH_TEMP, "Set Temp " + str(temp_number) + " to High Temp", "temp " + str(temp_number), pin, True)
+
+    jig_set_hub_read(ser, Value.LOW_TEMP, "Set Temp " + str(temp_number) + " to Low Temp", "temp " + str(temp_number), pin, True)

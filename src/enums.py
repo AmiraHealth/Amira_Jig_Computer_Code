@@ -81,6 +81,9 @@ class Value(HexEnum):  #value needed for this code
     NO_VALUE = 0
     HIGH = 1
     LOW = 2
+    HIGH_TEMP = 3
+    LOW_TEMP = 4
+    UNKNOWN_TEMP = 5
 
 def get_enum_member(enum_class, value): #return specific enum's member by integer value
     """

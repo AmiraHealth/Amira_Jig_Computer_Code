@@ -77,17 +77,13 @@ time.sleep(3)
 
 # test_driver_on(ser1, 2) #test heating driver
 
-test_driver_off(ser1, "sleep")
+# test_driver_off(ser1, "dis")
 
-# time.sleep(30)
+# hub_set_jig_read(ser1, Value.HIGH, "Reset Sleep High", "sleep", Pin.SLEEP, True)
 
-hub_set_jig_read(ser1, Value.HIGH, "Reset Sleep High", "sleep", Pin.SLEEP, True)
+# hub_set_jig_read(ser1, Value.LOW, "Reset Disable Low", "disable", Pin.DIS, True)
 
-hub_set_jig_read(ser1, Value.LOW, "Reset Disable Low", "disable", Pin.DIS, True)
-
-hub_set_jig_read(ser1, Value.HIGH, "Reset In1 High", "in 1", Pin.IN1, True)
-
-# time.sleep(10)
+# hub_set_jig_read(ser1, Value.HIGH, "Reset In1 High", "in 1", Pin.IN1, True)
 
 # test_driver_off(ser1, "sleep")
 
