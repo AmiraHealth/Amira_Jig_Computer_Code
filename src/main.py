@@ -7,6 +7,7 @@ from comms import *
 from tests import *
 import time
 import pandas as pd
+import sys  # Add this import to handle exiting the program
 
 print("Select language (1 for English, 2 for Chinese): 选择语言（1为英语，2为中文）：")
 language = input()
@@ -47,7 +48,22 @@ ser1 = serial.Serial(port, 115200, timeout=1)    #open serial port
 
 print("")
 
-control_tests(ser1, "start")
+attempts = 3
+for attempt in range(attempts):
+    result = control_tests(ser1, "start")
+    if result != -1:
+        break  #Successful
+    else:
+        print(f"Attempt {attempt + 1} to start tests failed.")
+        print("")
+        if attempt == attempts - 1:
+            print("All attempts to start tests failed")
+            print_test_results()
+            print("Unplug and replug the USB cable for the device to restart the devices and try again")
+            print("If issue persists due to jig to hub communication, there may be a fault in the B1, B2, L1, or L2 pins on the hub or on the jig")
+            print("If issue persists due to computer to jig communication, there may be a fault in the RXD or TXD pins on the jig")
+            print("Exiting program")
+            sys.exit(1) 
 
 time.sleep(3)
 
@@ -86,6 +102,14 @@ time.sleep(3)
 # hub_set_jig_read(ser1, Value.HIGH, "Reset In1 High", "in 1", Pin.IN1, True)
 
 # test_driver_off(ser1, "sleep")
+
+# test_temp(ser1, 1)
+
+# test_temp(ser1, 2)
+
+# test_temp(ser1, 3)
+
+# test_temp(ser1, 4)
 
 control_tests(ser1, "end")
 

@@ -31,8 +31,8 @@ def control_tests(ser, control_type):
 
     if(this_code == 0):
         print("Computer failed to create " + control_type + " code")
-        add_test_result(test_name, "FAILURE", "Computer failed to create " + control_type + " code")
         print("Failed " + control_type + " tests protocol")
+        add_test_result(test_name, "FAILURE", "Computer failed to create " + control_type + " code")
         return -1
 
     code_details = "Start tests" if control_type == 'start' else "End tests"
@@ -69,40 +69,40 @@ def control_tests(ser, control_type):
             return 1
         elif received_code['action'] == Action.FAILURE: 
             print("Computer failed " + control_type + " tests protocol")
-            add_test_result(test_name, "FAILURE", "Computer failed " + control_type + " tests protocol")
             print("Failed " + control_type + " tests protocol")
+            add_test_result(test_name, "FAILURE", "Computer failed " + control_type + " tests protocol")
             return -1
         elif received_code['action'] == Action.HUB_FAILURE:   
             print("Hub failed " + control_type + " tests protocol")
-            add_test_result(test_name, "FAILURE", "Hub failed " + control_type + " tests protocol")
             print("Failed " + control_type + " tests protocol")
+            add_test_result(test_name, "FAILURE", "Hub failed " + control_type + " tests protocol")
             return -1
         elif received_code['action'] == Action.JIG_FAILURE:
             print("Jig failed " + control_type + " tests protocol")
-            add_test_result(test_name, "FAILURE", "Jig failed " + control_type + " tests protocol")
             print("Failed " + control_type + " tests protocol")
+            add_test_result(test_name, "FAILURE", "Jig failed " + control_type + " tests protocol")
             return -1
         elif received_code['action'] == Action.JH_COMM_FAILURE:
             print("Communication failure between jig and hub when " + control_type + "ing tests")
-            add_test_result(test_name, "FAILURE", "Communication failure between jig and hub when " + control_type + "ing tests")
             print("Failed " + control_type + " tests protocol")
+            add_test_result(test_name, "FAILURE", "Communication failure between jig and hub when " + control_type + "ing tests")
             return -1
         elif received_code['action'] == Action.CJ_COMM_FAILURE:
             print("Communication failure between computer and jig when " + control_type + "ing tests")
-            add_test_result(test_name, "FAILURE", "Communication failure between computer and jig when " + control_type + "ing tests")
             print("Failed " + control_type + " tests protocol")
+            add_test_result(test_name, "FAILURE", "Communication failure between computer and jig when " + control_type + "ing tests")
             return -1
         else:
             print("Unknown action received from jig when " + control_type + "ing tests")
-            add_test_result(test_name, "FAILURE", "Unknown action received from jig when " + control_type + "ing tests")
             print("Failed " + control_type + " tests protocol")
+            add_test_result(test_name, "FAILURE", "Unknown action received from jig when " + control_type + "ing tests")
             return -1
 
     else:
         print("Did not receive a " + control_type + "ed code, code displayed below")
         print(received_code)
-        add_test_result(test_name, "FAILURE", "Did not receive a " + control_type + "ed code from jig")
         print("Failed " + control_type + " tests protocol")
+        add_test_result(test_name, "FAILURE", "Did not receive a " + control_type + "ed code from jig")
 
         return -1
     
@@ -423,9 +423,30 @@ def jig_set_hub_read(ser, state, test_name, pin_name, this_pin, print_success):
             if print_success:
                 add_test_result(test_name, "SUCCESS", "")
             return 1
-        elif (this_pin == Pin.TEMP_1 or this_pin == Pin.TEMP_2 or this_pin == Pin.TEMP_3 or this_pin == Pin.TEMP_4) and this_code['value'] == Value.UNKNOWN_TEMP:
-            add_test_result(test_name, "FAILURE", "Hub read unknown, incorrect temperature on " + pin_name + " pin")
-            return -1
+        elif (this_pin == Pin.TEMP1 or this_pin == Pin.TEMP2 or this_pin == Pin.TEMP3 or this_pin == Pin.TEMP4):
+            if state == Value.HIGH_TEMP:
+                if this_code['value'] == Value.TEMP_35_TO_40 or this_code['value'] == Value.TEMP_40_TO_45:
+                    if print_success:
+                        add_test_result(test_name, "SUCCESS", "")
+                    return 1
+                else:
+                    lowest_temp = (this_code['value'].value - Value.TEMP_0_TO_5.value) * 5
+                    highest_temp = lowest_temp + 5
+
+                    add_test_result(test_name, "FAILURE", "Hub read a temp from " + str(lowest_temp) + "-" + str(highest_temp) + " degrees on " + pin_name + " pin when high temp of 40 degrees was expected")
+                    return -1
+            elif state == Value.LOW_TEMP:
+                if this_code['value'] == Value.TEMP_25_TO_30 or this_code['value'] == Value.TEMP_30_TO_35:
+                    if print_success:
+                        add_test_result(test_name, "SUCCESS", "")
+                    return 1
+                else:
+                    lowest_temp = (this_code['value'].value - Value.TEMP_0_TO_5.value) * 5
+                    highest_temp = lowest_temp + 5
+
+                    add_test_result(test_name, "FAILURE", "Hub read a temp from " + str(lowest_temp) + "-" + str(highest_temp) + " degrees on " + pin_name + " pin when low temp of 30 degrees was expected")
+                    return -1
+
         else:
             add_test_result(test_name, "FAILURE", "Hub read " + wrong_state_string + " on " + pin_name + " pin when " + state_string + " was expected")
             return -1
@@ -558,9 +579,15 @@ def test_driver_off(ser, driver_type):
 
     hub_set_jig_read(ser, disable_value, test_name + " : Set Disable " + disable_value_string, "disable", Pin.DIS, True)
 
-    print("Waiting 20 seconds for driver to turn off")
+    if driver_type == "dis":
+        print("Waiting 20 seconds for driver to turn off")
 
-    time.sleep(20)
+        time.sleep(20)
+    
+    elif driver_type == "sleep":
+        print("Waiting 100 seconds for driver to turn off")
+
+        time.sleep(100)
 
     jig_read_test(ser, Value.LOW, test_name + " : Read In 2 Low", "in 2", Pin.IN2, True)
 
@@ -580,17 +607,19 @@ def test_temp(ser, temp_number):
     pin = Pin.NO_PIN
 
     if temp_number == 1:
-        pin = Pin.TEMP_1
+        pin = Pin.TEMP1
     elif temp_number == 2:
-        pin = Pin.TEMP_2
+        pin = Pin.TEMP2
     elif temp_number == 3:
-        pin = Pin.TEMP_3
+        pin = Pin.TEMP3
     elif temp_number == 4:
-        pin = Pin.TEMP_4
+        pin = Pin.TEMP4
     else:
         print("Invalid temperature number")
         return -1
     
     jig_set_hub_read(ser, Value.HIGH_TEMP, "Set Temp " + str(temp_number) + " to High Temp", "temp " + str(temp_number), pin, True)
+
+    time.sleep(5)
 
     jig_set_hub_read(ser, Value.LOW_TEMP, "Set Temp " + str(temp_number) + " to Low Temp", "temp " + str(temp_number), pin, True)

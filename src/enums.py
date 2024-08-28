@@ -83,7 +83,27 @@ class Value(HexEnum):  #value needed for this code
     LOW = 2
     HIGH_TEMP = 3
     LOW_TEMP = 4
-    UNKNOWN_TEMP = 5
+    TEMP_0_TO_5 = 5
+    TEMP_5_TO_10 = 6
+    TEMP_10_TO_15 = 7
+    TEMP_15_TO_20 = 8
+    TEMP_20_TO_25 = 9
+    TEMP_25_TO_30 = 10
+    TEMP_30_TO_35 = 11
+    TEMP_35_TO_40 = 12
+    TEMP_40_TO_45 = 13
+    TEMP_45_TO_50 = 14
+    TEMP_50_TO_55 = 15
+    TEMP_55_TO_60 = 16
+    TEMP_60_TO_65 = 17
+    TEMP_65_TO_70 = 18
+    TEMP_70_TO_75 = 19
+    TEMP_75_TO_80 = 20
+    TEMP_80_TO_85 = 21
+    TEMP_85_TO_90 = 22
+    TEMP_90_TO_95 = 23
+    TEMP_95_TO_100 = 24
+    UNKNOWN_TEMP = 25
 
 def get_enum_member(enum_class, value): #return specific enum's member by integer value
     """
