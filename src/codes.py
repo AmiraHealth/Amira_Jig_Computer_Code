@@ -1,4 +1,5 @@
 from enums import *
+import config
 
 def create_general_code(*args):
     return ''.join(arg[2:] for arg in args)
@@ -37,7 +38,13 @@ def parse_code(code):      #get info about code by parsing, for now assuming com
     checksum = calculate_checksum_int(codeValues[:-1])        #validate checksum
 
     if checksum != codeValues[-1]:
-        print("Checksum mismatch detected - code corrupted")
+        translations = {
+            "checksum_mismatch": {
+                "en": "Checksum mismatch detected - code corrupted",
+                "cn": "检测到校验和不匹配 - 代码损坏"
+            }
+        }
+        print(translations["checksum_mismatch"][config.lang])
         return 0
 
     id = get_enum_member(Id, codeValues[0])

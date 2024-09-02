@@ -1,5 +1,6 @@
 from enum import Enum
 import pandas as pd
+import config
 
 #Global variables
 REQUEST_SIZE = 6
@@ -105,6 +106,21 @@ class Value(HexEnum):  #value needed for this code
     TEMP_95_TO_100 = 24
     UNKNOWN_TEMP = 25
 
+translations = {
+    "test_completed": {
+        "en": "Test Completed - Test: {}, Result: {}, Reason: {}",
+        "cn": "测试完成 - 测试：{}，结果：{}，原因：{}"
+    },
+    "print_success": {
+        "en": "Test: {}, Result: {}",
+        "cn": "测试：{}，结果：{}"
+    },
+    "print_failure": {
+        "en": "Test: {}, Result: {}, Reason: {}",
+        "cn": "测试：{}，结果：{}，原因：{}"
+    }
+}
+
 def get_enum_member(enum_class, value): #return specific enum's member by integer value
     """
     Get the enum member corresponding to the integer value.
@@ -131,9 +147,9 @@ def print_test_results():
     """
     for index, row in test_results.iterrows():
         if row['Result'] == 'SUCCESS':
-            print(f"Test: {row['Test']}, Result: {row['Result']}")
+            print(translations["print_success"][config.lang].format(row['Test'], row['Result']))
         else:
-            print(f"Test: {row['Test']}, Result: {row['Result']}, Reason: {row['Reason']}")
+            print(translations["print_failure"][config.lang].format(row['Test'], row['Result'], row['Reason']))
 
 def add_test_result(this_name, this_result, this_reason):
     """
@@ -149,5 +165,5 @@ def add_test_result(this_name, this_result, this_reason):
     new_row = pd.DataFrame([{'Test': this_name, 'Result': this_result, 'Reason': this_reason}])
     test_results = pd.concat([test_results, new_row], ignore_index=True)
 
-    print("Test Completed - Test: " + this_name + ", Result: " + this_result + ", Reason: " + this_reason)
+    print(translations["test_completed"][config.lang].format(this_name, this_result, this_reason))
     print("")
